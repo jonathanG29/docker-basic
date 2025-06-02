@@ -7,8 +7,7 @@ pipeline {
     }
 
     environment {
-        DOTNET_ROOT = "${env.PATH}:${tool 'dotnet-9.0.203'}/bin"
-        PATH = "${env.PATH}:${tool 'node-20.19.2'}/bin"
+        PATH = "${env.PATH}:/home/server3/.dotnet/tools"
         SONARQUBE_URL = 'http://192.168.1.5:9000'
         SONAR_TOKEN = 'sqp_8e2829e1a23516d875b04e9747633d0ad5f8f41e'
     }
@@ -19,11 +18,6 @@ pipeline {
             steps {
                 script {
                     echo 'Node.js version:'
-                    sh 'node -v'
-                    echo 'NPM version:'
-                    sh 'npm -v'
-                    echo 'Dotnet version:'
-                    sh 'dotnet --version'
                 }
             }
         }
@@ -59,14 +53,6 @@ pipeline {
             }
         }
 
-        stage('Backend - Test') {
-            steps {
-                dir('10-net9-remix-pg-env/Backend') {
-                    echo 'Running tests...'
-                    sh 'dotnet test --no-build --verbosity normal'
-                }
-            }
-        }
 
         stage('Backend - Code Coverage') {
             steps {
