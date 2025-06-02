@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        PATH = "${env.PATH}:/home/server3/.dotnet/tools"
+        PATH = "${env.PATH}:/home/server1/.dotnet/tools"
         SONARQUBE_URL = 'http://192.168.1.5:9000'
         SONAR_TOKEN = 'sqp_8e2829e1a23516d875b04e9747633d0ad5f8f41e'
     }
@@ -37,18 +37,15 @@ pipeline {
             }
         }
 
-        stage('Backend - Static Analysis') {
+        stage('Backend - Static Analysis (SonarQube)') {
             steps {
                 dir('10-net9-remix-pg-env/Backend') {
-                    echo 'Running static analysis...'
-                    sh """
-                        dotnet sonarscanner begin \
-                            /k:"Docker-Basic" \
-                            /d:sonar.host.url="${SONARQUBE_URL}" \
-                            /d:sonar.login="\${SONAR_TOKEN}"
-                        dotnet build
-                        dotnet sonarscanner end /d:sonar.login="\${SONAR_TOKEN}"
-                    """
+                    echo 'Running static analysis with SonarQube...'
+                    withEnv(['PATH+DOTNET=/home/server1/.dotnet/tools']) {
+                        sh 'dotnet sonarscanner begin /k:"Docker-Basic" /d:sonar.host.url=$SONARQUBE_URL /d:sonar.login=$SONAR_TOKEN'
+                        sh 'dotnet build'
+                        sh 'dotnet sonarscanner end /d:sonar.login=$SONAR_TOKEN'
+                    }
                 }
             }
         }
