@@ -2,25 +2,17 @@ pipeline {
     agent any
     
     tools {
-        dotnetsdk 'dotnet-9.0.203'
-        nodejs 'node-20.19.2'
+        dotnetsdk 'dotnet-9'
+        nodejs 'node-22'
     }
 
     environment {
-        DOTNET_ROOT = "${env.PATH}:${tool 'dotnet-9.0.203'}/bin"
-        PATH = "${env.PATH}:${tool 'node-20.19.2'}/bin"
-        SONARQUBE_URL = 'http://192.168.1.5:9000'
-        SONAR_TOKEN = 'sqp_8e2829e1a23516d875b04e9747633d0ad5f8f41e'
+        DOTNET_ROOT = "${env.PATH}:${tool 'dotnet-9'}/bin"
+        PATH = "${env.PATH}:${tool 'node-22'}/bin"
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Check versions') {
+        stage('Check versions'){
             steps {
                 script {
                     echo 'Node.js version:'
@@ -32,14 +24,7 @@ pipeline {
                 }
             }
         }
-
-        stage('Checkout'){
-            steps {
-                git url: 'https://github.com/jonathanG29/docker-basic.git', branch: 'main'
-            }
-        }
-
-        stage('Backend - Restore') {
+        stage('Backend - Restore'){
             steps {
                 dir('10-net9-remix-pg-env/Backend') {
                     echo 'Restoring dependencies...'
@@ -47,24 +32,17 @@ pipeline {
                 }
             }
         }
-
-        stage('Backend - Static Analysis') {
+        stage('Backend - Static Analysis'){
             steps {
                 dir('10-net9-remix-pg-env/Backend') {
                     echo 'Running static analysis...'
-                    sh """
-                        dotnet sonarscanner begin \
-                            /k:"Docker-Basic" \
-                            /d:sonar.host.url="${SONARQUBE_URL}" \
-                            /d:sonar.login="\${SONAR_TOKEN}"
-                        dotnet build
-                        dotnet sonarscanner end /d:sonar.login="\${SONAR_TOKEN}"
-                    """
+                    sh 'dotnet sonarscanner begin /k:"Docker-Basic" /d:sonar.host.url="http://localhost:9000" /d:sonar.login="squ_2def316aaefee3fbfa5a2b5d1866322eaf68f2ec"'
+                    sh 'dotnet build'
+                    sh 'dotnet sonarscanner end /d:sonar.login="squ_2def316aaefee3fbfa5a2b5d1866322eaf68f2ec"'
                 }
             }
         }
-
-        stage('Backend - Test') {
+        stage('Backend - Test'){
             steps {
                 dir('10-net9-remix-pg-env/Backend') {
                     echo 'Running tests...'
@@ -72,8 +50,7 @@ pipeline {
                 }
             }
         }
-
-        stage('Backend - Code Coverage') {
+        stage('Backend - Code Coverage'){
             steps {
                 dir('10-net9-remix-pg-env/Backend') {
                     echo 'Running code coverage...'
@@ -81,26 +58,23 @@ pipeline {
                 }
             }
         }
-
-        stage('Backend - Build') {
+        stage('Backend - Build'){
             steps {
                 dir('10-net9-remix-pg-env/Backend') {
                     echo 'Building the project...'
                     sh 'dotnet build --configuration Release --no-restore'
                 }
             }
-        }
-
-        stage('Backend - Publish') {
+        }  
+        stage('Backend - Publish'){
             steps {
                 dir('10-net9-remix-pg-env/Backend') {
                     echo 'Publishing the project...'
                     sh 'dotnet publish --configuration Release --no-build -o ./publish'
                 }
             }
-        }
-
-        stage('Frontend - Install') {
+        } 
+        stage('Frontend - Install'){
             steps {
                 dir('10-net9-remix-pg-env/Frontend') {
                     echo 'Installing dependencies...'
@@ -108,8 +82,7 @@ pipeline {
                 }
             }
         }
-
-        stage('Frontend - Test') {
+        stage('Frontend - Test'){
             steps {
                 dir('10-net9-remix-pg-env/Frontend') {
                     echo 'Running tests...'
@@ -117,8 +90,7 @@ pipeline {
                 }
             }
         }
-
-        stage('Frontend - Build') {
+        stage('Frontend - Build'){
             steps {
                 dir('10-net9-remix-pg-env/Frontend') {
                     echo 'Building the project...'
@@ -130,14 +102,7 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline execution completed'
-            cleanWs()
-        }
-        success {
-            echo 'Pipeline executed successfully'
-        }
-        failure {
-            echo 'Pipeline execution failed'
+            echo 'This will always run after the stages.'
         }
     }
 }
