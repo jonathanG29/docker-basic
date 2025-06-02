@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        PATH = "${env.PATH}:/home/server1/.dotnet/tools"
+        PATH = "${env.PATH}:/opt/dotnet-tools" // 🔧 Se actualizó para incluir la nueva ruta
         SONARQUBE_URL = 'http://192.168.1.5:9000'
         SONAR_TOKEN = 'sqp_8e2829e1a23516d875b04e9747633d0ad5f8f41e'
     }
@@ -22,7 +22,7 @@ pipeline {
             }
         }
 
-        stage('Checkout'){
+        stage('Checkout') {
             steps {
                 git url: 'https://github.com/jonathanG29/docker-basic.git', branch: 'main'
             }
@@ -37,25 +37,24 @@ pipeline {
             }
         }
 
-stage('Backend - Static Analysis') {
-    steps {
-        dir('10-net9-remix-pg-env/Backend') {
-            echo 'Running static analysis...'
-            sh '''
-                /root/.dotnet/tools/dotnet-sonarscanner begin \
-                    /k:"Docker-Basic" \
-                    /d:sonar.host.url=${SONARQUBE_URL} \
-                    /d:sonar.login=${SONAR_TOKEN}
+        stage('Backend - Static Analysis') {
+            steps {
+                dir('10-net9-remix-pg-env/Backend') {
+                    echo 'Running static analysis...'
+                    sh '''
+                        /opt/dotnet-tools/dotnet-sonarscanner begin \ // 🔧 Ruta cambiada
+                            /k:"Docker-Basic" \
+                            /d:sonar.host.url=${SONARQUBE_URL} \
+                            /d:sonar.login=${SONAR_TOKEN}
 
-                dotnet build
+                        dotnet build
 
-                /root/.dotnet/tools/dotnet-sonarscanner end \
-                    /d:sonar.login=${SONAR_TOKEN}
-            '''
+                        /opt/dotnet-tools/dotnet-sonarscanner end \   // 🔧 Ruta cambiada
+                            /d:sonar.login=${SONAR_TOKEN}
+                    '''
+                }
+            }
         }
-    }
-}
-
 
         stage('Backend - Code Coverage') {
             steps {
