@@ -9,7 +9,7 @@ pipeline {
     environment {
         PATH = "${env.PATH}:/opt/dotnet-tools" 
         SONARQUBE_URL = 'http://192.168.1.5:9000'
-        SONAR_TOKEN = 'sqp_8e2829e1a23516d875b04e9747633d0ad5f8f41e'
+        SONAR_TOKEN = 'sqa_8e2829e1a23516d875b04e9747633d0ad5f8f41e'
     }
 
     stages {
