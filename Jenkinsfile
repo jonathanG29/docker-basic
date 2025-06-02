@@ -37,18 +37,24 @@ pipeline {
             }
         }
 
-        stage('Backend - Static Analysis (SonarQube)') {
-            steps {
-                dir('10-net9-remix-pg-env/Backend') {
-                    echo 'Running static analysis with SonarQube...'
-                    withEnv(['PATH+DOTNET=/home/server1/.dotnet/tools']) {
-                        sh 'dotnet sonarscanner begin /k:"Docker-Basic" /d:sonar.host.url=$SONARQUBE_URL /d:sonar.login=$SONAR_TOKEN'
-                        sh 'dotnet build'
-                        sh 'dotnet sonarscanner end /d:sonar.login=$SONAR_TOKEN'
-                    }
-                }
-            }
+stage('Backend - Static Analysis') {
+    steps {
+        dir('10-net9-remix-pg-env/Backend') {
+            echo 'Running static analysis...'
+            sh '''
+                /root/.dotnet/tools/dotnet-sonarscanner begin \
+                    /k:"Docker-Basic" \
+                    /d:sonar.host.url=${SONARQUBE_URL} \
+                    /d:sonar.login=${SONAR_TOKEN}
+
+                dotnet build
+
+                /root/.dotnet/tools/dotnet-sonarscanner end \
+                    /d:sonar.login=${SONAR_TOKEN}
+            '''
         }
+    }
+}
 
 
         stage('Backend - Code Coverage') {
