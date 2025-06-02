@@ -80,6 +80,33 @@ pipeline {
                 }
             }
         }
+
+        stage('Frontend - Install') {
+            steps {
+                dir('10-net9-remix-pg-env/Frontend') {
+                    echo 'Installing dependencies...'
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('Frontend - Test') {
+            steps {
+                dir('10-net9-remix-pg-env/Frontend') {
+                    echo 'Running tests...'
+                    sh 'npm test'
+                }
+            }
+        }
+
+        stage('Frontend - Build') {
+            steps {
+                dir('10-net9-remix-pg-env/Frontend') {
+                    echo 'Building the project...'
+                    sh 'npm run build'
+                }
+            }
+        }
     }
 
     post {
