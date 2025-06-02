@@ -9,9 +9,17 @@ pipeline {
     environment {
         DOTNET_ROOT = "${env.PATH}:${tool 'dotnet-9.0.203'}/bin"
         PATH = "${env.PATH}:${tool 'node-20.19.2'}/bin"
+        SONARQUBE_URL = 'http://192.168.1.5:9000'
+        SONAR_TOKEN = credentials('sonar-token')
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Check versions') {
             steps {
                 script {
@@ -38,9 +46,14 @@ pipeline {
             steps {
                 dir('10-net9-remix-pg-env/Backend') {
                     echo 'Running static analysis...'
-                    sh 'dotnet sonarscanner begin /k:"Docker-Basic" /d:sonar.host.url="http://localhost:9000" /d:sonar.login="squ_2def316aaefee3fbfa5a2b5d1866322eaf68f2ec"'
-                    sh 'dotnet build'
-                    sh 'dotnet sonarscanner end /d:sonar.login="squ_2def316aaefee3fbfa5a2b5d1866322eaf68f2ec"'
+                    sh """
+                        dotnet sonarscanner begin \
+                            /k:"Docker-Basic" \
+                            /d:sonar.host.url="${SONARQUBE_URL}" \
+                            /d:sonar.login="\${SONAR_TOKEN}"
+                        dotnet build
+                        dotnet sonarscanner end /d:sonar.login="\${SONAR_TOKEN}"
+                    """
                 }
             }
         }
@@ -111,7 +124,14 @@ pipeline {
 
     post {
         always {
-            echo 'This will always run after the stages.'
+            echo 'Pipeline execution completed'
+            cleanWs()
+        }
+        success {
+            echo 'Pipeline executed successfully'
+        }
+        failure {
+            echo 'Pipeline execution failed'
         }
     }
 }
